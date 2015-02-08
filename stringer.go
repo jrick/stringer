@@ -56,7 +56,7 @@
 // where t is the lower-cased name of the first type listed. It can be overridden
 // with the -output flag.
 //
-package main // import "golang.org/x/tools/cmd/stringer"
+package main // import "github.com/jrick/stringer"
 
 import (
 	"bytes"
@@ -485,7 +485,7 @@ func usize(n int) int {
 func (g *Generator) declareIndexAndNameVars(runs [][]Value, typeName string) {
 	var indexes, names []string
 	for i, run := range runs {
-		index, name := g.createIndexAndNameDecl(run, typeName, fmt.Sprintf("_%d", i))
+		index, name := g.createIndexAndNameDecl(run, typeName, fmt.Sprintf("%d", i))
 		indexes = append(indexes, index)
 		names = append(names, name)
 	}
@@ -516,10 +516,10 @@ func (g *Generator) createIndexAndNameDecl(run []Value, typeName string, suffix 
 		b.WriteString(run[i].name)
 		indexes[i] = b.Len()
 	}
-	nameConst := fmt.Sprintf("_%s_name%s = %q", typeName, suffix, b.String())
+	nameConst := fmt.Sprintf("stringernames%s%s = %q", typeName, suffix, b.String())
 	nameLen := b.Len()
 	b.Reset()
-	fmt.Fprintf(b, "_%s_index%s = [...]uint%d{0, ", typeName, suffix, usize(nameLen))
+	fmt.Fprintf(b, "stringerindex%s%s = [...]uint%d{0, ", typeName, suffix, usize(nameLen))
 	for i, v := range indexes {
 		if i > 0 {
 			fmt.Fprintf(b, ", ")
@@ -532,7 +532,7 @@ func (g *Generator) createIndexAndNameDecl(run []Value, typeName string, suffix 
 
 // declareNameVars declares the concatenated names string representing all the values in the runs.
 func (g *Generator) declareNameVars(runs [][]Value, typeName string, suffix string) {
-	g.Printf("const _%s_name%s = \"", typeName, suffix)
+	g.Printf("const stringernames%s%s = \"", typeName, suffix)
 	for _, run := range runs {
 		for i := range run {
 			g.Printf("%s", run[i].name)
@@ -563,10 +563,10 @@ func (g *Generator) buildOneRun(runs [][]Value, typeName string) {
 //	[2]: size of index element (8 for uint8 etc.)
 //	[3]: less than zero check (for signed types)
 const stringOneRun = `func (i %[1]s) String() string {
-	if %[3]si+1 >= %[1]s(len(_%[1]s_index)) {
+	if %[3]si+1 >= %[1]s(len(stringerindex%[1]s)) {
 		return fmt.Sprintf("%[1]s(%%d)", i)
 	}
-	return _%[1]s_name[_%[1]s_index[i]:_%[1]s_index[i+1]]
+	return stringernames%[1]s[stringerindex%[1]s[i]:stringerindex%[1]s[i+1]]
 }
 `
 
@@ -579,10 +579,10 @@ const stringOneRun = `func (i %[1]s) String() string {
  */
 const stringOneRunWithOffset = `func (i %[1]s) String() string {
 	i -= %[2]s
-	if %[4]si+1 >= %[1]s(len(_%[1]s_index)) {
+	if %[4]si+1 >= %[1]s(len(stringerindex%[1]s)) {
 		return fmt.Sprintf("%[1]s(%%d)", i + %[2]s)
 	}
-	return _%[1]s_name[_%[1]s_index[i] : _%[1]s_index[i+1]]
+	return stringernames%[1]s[stringerindex%[1]s[i] : stringerindex%[1]s[i+1]]
 }
 `
 
@@ -596,14 +596,14 @@ func (g *Generator) buildMultipleRuns(runs [][]Value, typeName string) {
 	for i, values := range runs {
 		if len(values) == 1 {
 			g.Printf("\tcase i == %s:\n", &values[0])
-			g.Printf("\t\treturn _%s_name_%d\n", typeName, i)
+			g.Printf("\t\treturn stringernames%s%d\n", typeName, i)
 			continue
 		}
 		g.Printf("\tcase %s <= i && i <= %s:\n", &values[0], &values[len(values)-1])
 		if values[0].value != 0 {
 			g.Printf("\t\ti -= %s\n", &values[0])
 		}
-		g.Printf("\t\treturn _%s_name_%d[_%s_index_%d[i]:_%s_index_%d[i+1]]\n",
+		g.Printf("\t\treturn stringernames%s%d[stringerindex%s%d[i]:stringerindex%s%d[i+1]]\n",
 			typeName, i, typeName, i, typeName, i)
 	}
 	g.Printf("\tdefault:\n")
@@ -617,11 +617,11 @@ func (g *Generator) buildMultipleRuns(runs [][]Value, typeName string) {
 func (g *Generator) buildMap(runs [][]Value, typeName string) {
 	g.Printf("\n")
 	g.declareNameVars(runs, typeName, "")
-	g.Printf("\nvar _%s_map = map[%s]string{\n", typeName, typeName)
+	g.Printf("\nvar stringermap%s = map[%s]string{\n", typeName, typeName)
 	n := 0
 	for _, values := range runs {
 		for _, value := range values {
-			g.Printf("\t%s: _%s_name[%d:%d],\n", &value, typeName, n, n+len(value.name))
+			g.Printf("\t%s: stringernames%s[%d:%d],\n", &value, typeName, n, n+len(value.name))
 			n += len(value.name)
 		}
 	}
@@ -631,7 +631,7 @@ func (g *Generator) buildMap(runs [][]Value, typeName string) {
 
 // Argument to format is the type name.
 const stringMap = `func (i %[1]s) String() string {
-	if str, ok := _%[1]s_map[i]; ok {
+	if str, ok := stringermap%[1]s[i]; ok {
 		return str
 	}
 	return fmt.Sprintf("%[1]s(%%d)", i)

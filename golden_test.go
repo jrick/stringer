@@ -46,15 +46,15 @@ const (
 `
 
 const day_out = `
-const _Day_name = "MondayTuesdayWednesdayThursdayFridaySaturdaySunday"
+const stringernamesDay = "MondayTuesdayWednesdayThursdayFridaySaturdaySunday"
 
-var _Day_index = [...]uint8{0, 6, 13, 22, 30, 36, 44, 50}
+var stringerindexDay = [...]uint8{0, 6, 13, 22, 30, 36, 44, 50}
 
 func (i Day) String() string {
-	if i < 0 || i+1 >= Day(len(_Day_index)) {
+	if i < 0 || i+1 >= Day(len(stringerindexDay)) {
 		return fmt.Sprintf("Day(%d)", i)
 	}
-	return _Day_name[_Day_index[i]:_Day_index[i+1]]
+	return stringernamesDay[stringerindexDay[i]:stringerindexDay[i+1]]
 }
 `
 
@@ -71,16 +71,16 @@ const (
 `
 
 const offset_out = `
-const _Number_name = "OneTwoThree"
+const stringernamesNumber = "OneTwoThree"
 
-var _Number_index = [...]uint8{0, 3, 6, 11}
+var stringerindexNumber = [...]uint8{0, 3, 6, 11}
 
 func (i Number) String() string {
 	i -= 1
-	if i < 0 || i+1 >= Number(len(_Number_index)) {
+	if i < 0 || i+1 >= Number(len(stringerindexNumber)) {
 		return fmt.Sprintf("Number(%d)", i+1)
 	}
-	return _Number_name[_Number_index[i]:_Number_index[i+1]]
+	return stringernamesNumber[stringerindexNumber[i]:stringerindexNumber[i+1]]
 }
 `
 
@@ -100,27 +100,27 @@ const (
 
 const gap_out = `
 const (
-	_Gap_name_0 = "TwoThree"
-	_Gap_name_1 = "FiveSixSevenEightNine"
-	_Gap_name_2 = "Eleven"
+	stringernamesGap0 = "TwoThree"
+	stringernamesGap1 = "FiveSixSevenEightNine"
+	stringernamesGap2 = "Eleven"
 )
 
 var (
-	_Gap_index_0 = [...]uint8{0, 3, 8}
-	_Gap_index_1 = [...]uint8{0, 4, 7, 12, 17, 21}
-	_Gap_index_2 = [...]uint8{0, 6}
+	stringerindexGap0 = [...]uint8{0, 3, 8}
+	stringerindexGap1 = [...]uint8{0, 4, 7, 12, 17, 21}
+	stringerindexGap2 = [...]uint8{0, 6}
 )
 
 func (i Gap) String() string {
 	switch {
 	case 2 <= i && i <= 3:
 		i -= 2
-		return _Gap_name_0[_Gap_index_0[i]:_Gap_index_0[i+1]]
+		return stringernamesGap0[stringerindexGap0[i]:stringerindexGap0[i+1]]
 	case 5 <= i && i <= 9:
 		i -= 5
-		return _Gap_name_1[_Gap_index_1[i]:_Gap_index_1[i+1]]
+		return stringernamesGap1[stringerindexGap1[i]:stringerindexGap1[i+1]]
 	case i == 11:
-		return _Gap_name_2
+		return stringernamesGap2
 	default:
 		return fmt.Sprintf("Gap(%d)", i)
 	}
@@ -139,16 +139,16 @@ const (
 `
 
 const num_out = `
-const _Num_name = "m_2m_1m0m1m2"
+const stringernamesNum = "m_2m_1m0m1m2"
 
-var _Num_index = [...]uint8{0, 3, 6, 8, 10, 12}
+var stringerindexNum = [...]uint8{0, 3, 6, 8, 10, 12}
 
 func (i Num) String() string {
 	i -= -2
-	if i < 0 || i+1 >= Num(len(_Num_index)) {
+	if i < 0 || i+1 >= Num(len(stringerindexNum)) {
 		return fmt.Sprintf("Num(%d)", i+-2)
 	}
-	return _Num_name[_Num_index[i]:_Num_index[i+1]]
+	return stringernamesNum[stringerindexNum[i]:stringerindexNum[i+1]]
 }
 `
 
@@ -168,22 +168,22 @@ const (
 
 const unum_out = `
 const (
-	_Unum_name_0 = "m0m1m2"
-	_Unum_name_1 = "m_2m_1"
+	stringernamesUnum0 = "m0m1m2"
+	stringernamesUnum1 = "m_2m_1"
 )
 
 var (
-	_Unum_index_0 = [...]uint8{0, 2, 4, 6}
-	_Unum_index_1 = [...]uint8{0, 3, 6}
+	stringerindexUnum0 = [...]uint8{0, 2, 4, 6}
+	stringerindexUnum1 = [...]uint8{0, 3, 6}
 )
 
 func (i Unum) String() string {
 	switch {
 	case 0 <= i && i <= 2:
-		return _Unum_name_0[_Unum_index_0[i]:_Unum_index_0[i+1]]
+		return stringernamesUnum0[stringerindexUnum0[i]:stringerindexUnum0[i+1]]
 	case 253 <= i && i <= 254:
 		i -= 253
-		return _Unum_name_1[_Unum_index_1[i]:_Unum_index_1[i+1]]
+		return stringernamesUnum1[stringerindexUnum1[i]:stringerindexUnum1[i+1]]
 	default:
 		return fmt.Sprintf("Unum(%d)", i)
 	}
@@ -212,26 +212,26 @@ const (
 `
 
 const prime_out = `
-const _Prime_name = "p2p3p5p7p11p13p17p19p23p29p37p41p43"
+const stringernamesPrime = "p2p3p5p7p11p13p17p19p23p29p37p41p43"
 
-var _Prime_map = map[Prime]string{
-	2:  _Prime_name[0:2],
-	3:  _Prime_name[2:4],
-	5:  _Prime_name[4:6],
-	7:  _Prime_name[6:8],
-	11: _Prime_name[8:11],
-	13: _Prime_name[11:14],
-	17: _Prime_name[14:17],
-	19: _Prime_name[17:20],
-	23: _Prime_name[20:23],
-	29: _Prime_name[23:26],
-	31: _Prime_name[26:29],
-	41: _Prime_name[29:32],
-	43: _Prime_name[32:35],
+var stringermapPrime = map[Prime]string{
+	2:  stringernamesPrime[0:2],
+	3:  stringernamesPrime[2:4],
+	5:  stringernamesPrime[4:6],
+	7:  stringernamesPrime[6:8],
+	11: stringernamesPrime[8:11],
+	13: stringernamesPrime[11:14],
+	17: stringernamesPrime[14:17],
+	19: stringernamesPrime[17:20],
+	23: stringernamesPrime[20:23],
+	29: stringernamesPrime[23:26],
+	31: stringernamesPrime[26:29],
+	41: stringernamesPrime[29:32],
+	43: stringernamesPrime[32:35],
 }
 
 func (i Prime) String() string {
-	if str, ok := _Prime_map[i]; ok {
+	if str, ok := stringermapPrime[i]; ok {
 		return str
 	}
 	return fmt.Sprintf("Prime(%d)", i)
