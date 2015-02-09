@@ -175,6 +175,8 @@ const (
 	m1
 	m2
 )
+func (un Unum) f() {
+}
 `
 
 const unum_out = `
@@ -189,15 +191,15 @@ var (
 )
 
 // String returns the Unum in a human-readable form.
-func (i Unum) String() string {
+func (un Unum) String() string {
 	switch {
-	case 0 <= i && i <= 2:
-		return stringernamesUnum0[stringerindexUnum0[i]:stringerindexUnum0[i+1]]
-	case 253 <= i && i <= 254:
-		i -= 253
-		return stringernamesUnum1[stringerindexUnum1[i]:stringerindexUnum1[i+1]]
+	case 0 <= un && un <= 2:
+		return stringernamesUnum0[stringerindexUnum0[un]:stringerindexUnum0[un+1]]
+	case 253 <= un && un <= 254:
+		un -= 253
+		return stringernamesUnum1[stringerindexUnum1[un]:stringerindexUnum1[un+1]]
 	default:
-		return fmt.Sprintf("Unum(%d)", i)
+		return fmt.Sprintf("Unum(%d)", un)
 	}
 }
 `
