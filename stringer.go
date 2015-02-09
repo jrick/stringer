@@ -564,7 +564,6 @@ func (g *Generator) receiverName(typeName string) string {
 			}
 			if receiverType == typeName {
 				receiver = r.Names[0].Name
-				return true
 			}
 			return false
 		})
