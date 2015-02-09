@@ -594,7 +594,7 @@ func (g *Generator) buildOneRun(runs [][]Value, typeName string) {
 //	[1]: type name
 //	[2]: size of index element (8 for uint8 etc.)
 //	[3]: less than zero check (for signed types)
-//      [4]: receiver name
+//	[4]: receiver name
 const stringOneRun = `// String returns the %[1]s in a human-readable form.
 func (%[4]s %[1]s) String() string {
 	if %[3]s%[4]s+1 >= %[1]s(len(stringerindex%[1]s)) {
@@ -609,7 +609,7 @@ func (%[4]s %[1]s) String() string {
 //	[2]: lowest defined value for type, as a string
 //	[3]: size of index element (8 for uint8 etc.)
 //	[4]: less than zero check (for signed types)
-//      [5]: receiver name
+//	[5]: receiver name
 /*
  */
 const stringOneRunWithOffset = `// String returns the %[1]s in a human-readable form.
