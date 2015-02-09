@@ -50,6 +50,7 @@ const stringernamesDay = "MondayTuesdayWednesdayThursdayFridaySaturdaySunday"
 
 var stringerindexDay = [...]uint8{0, 6, 13, 22, 30, 36, 44, 50}
 
+// String returns the Day in a human-readable form.
 func (i Day) String() string {
 	if i < 0 || i+1 >= Day(len(stringerindexDay)) {
 		return fmt.Sprintf("Day(%d)", i)
@@ -75,6 +76,7 @@ const stringernamesNumber = "OneTwoThree"
 
 var stringerindexNumber = [...]uint8{0, 3, 6, 11}
 
+// String returns the Number in a human-readable form.
 func (i Number) String() string {
 	i -= 1
 	if i < 0 || i+1 >= Number(len(stringerindexNumber)) {
@@ -111,6 +113,7 @@ var (
 	stringerindexGap2 = [...]uint8{0, 6}
 )
 
+// String returns the Gap in a human-readable form.
 func (i Gap) String() string {
 	switch {
 	case 2 <= i && i <= 3:
@@ -143,6 +146,7 @@ const stringernamesNum = "m_2m_1m0m1m2"
 
 var stringerindexNum = [...]uint8{0, 3, 6, 8, 10, 12}
 
+// String returns the Num in a human-readable form.
 func (i Num) String() string {
 	i -= -2
 	if i < 0 || i+1 >= Num(len(stringerindexNum)) {
@@ -177,6 +181,7 @@ var (
 	stringerindexUnum1 = [...]uint8{0, 3, 6}
 )
 
+// String returns the Unum in a human-readable form.
 func (i Unum) String() string {
 	switch {
 	case 0 <= i && i <= 2:
@@ -230,6 +235,7 @@ var stringermapPrime = map[Prime]string{
 	43: stringernamesPrime[32:35],
 }
 
+// String returns the Prime in a human-readable form.
 func (i Prime) String() string {
 	if str, ok := stringermapPrime[i]; ok {
 		return str

@@ -562,7 +562,8 @@ func (g *Generator) buildOneRun(runs [][]Value, typeName string) {
 //	[1]: type name
 //	[2]: size of index element (8 for uint8 etc.)
 //	[3]: less than zero check (for signed types)
-const stringOneRun = `func (i %[1]s) String() string {
+const stringOneRun = `// String returns the %[1]s in a human-readable form.
+func (i %[1]s) String() string {
 	if %[3]si+1 >= %[1]s(len(stringerindex%[1]s)) {
 		return fmt.Sprintf("%[1]s(%%d)", i)
 	}
@@ -577,7 +578,8 @@ const stringOneRun = `func (i %[1]s) String() string {
 //	[4]: less than zero check (for signed types)
 /*
  */
-const stringOneRunWithOffset = `func (i %[1]s) String() string {
+const stringOneRunWithOffset = `// String returns the %[1]s in a human-readable form.
+func (i %[1]s) String() string {
 	i -= %[2]s
 	if %[4]si+1 >= %[1]s(len(stringerindex%[1]s)) {
 		return fmt.Sprintf("%[1]s(%%d)", i + %[2]s)
@@ -591,6 +593,7 @@ const stringOneRunWithOffset = `func (i %[1]s) String() string {
 func (g *Generator) buildMultipleRuns(runs [][]Value, typeName string) {
 	g.Printf("\n")
 	g.declareIndexAndNameVars(runs, typeName)
+	g.Printf("// String returns the %s in a human-readable form.\n", typeName)
 	g.Printf("func (i %s) String() string {\n", typeName)
 	g.Printf("\tswitch {\n")
 	for i, values := range runs {
@@ -630,7 +633,8 @@ func (g *Generator) buildMap(runs [][]Value, typeName string) {
 }
 
 // Argument to format is the type name.
-const stringMap = `func (i %[1]s) String() string {
+const stringMap = `// String returns the %[1]s in a human-readable form.
+func (i %[1]s) String() string {
 	if str, ok := stringermap%[1]s[i]; ok {
 		return str
 	}
