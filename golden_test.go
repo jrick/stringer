@@ -43,6 +43,8 @@ const (
 	Saturday
 	Sunday
 )
+func (d Day) f() {
+}
 `
 
 const day_out = `
@@ -51,11 +53,11 @@ const stringernamesDay = "MondayTuesdayWednesdayThursdayFridaySaturdaySunday"
 var stringerindexDay = [...]uint8{0, 6, 13, 22, 30, 36, 44, 50}
 
 // String returns the Day in a human-readable form.
-func (i Day) String() string {
-	if i < 0 || i+1 >= Day(len(stringerindexDay)) {
-		return fmt.Sprintf("Day(%d)", i)
+func (d Day) String() string {
+	if d < 0 || d+1 >= Day(len(stringerindexDay)) {
+		return fmt.Sprintf("Day(%d)", d)
 	}
-	return stringernamesDay[stringerindexDay[i]:stringerindexDay[i+1]]
+	return stringernamesDay[stringerindexDay[d]:stringerindexDay[d+1]]
 }
 `
 
@@ -98,6 +100,8 @@ const (
 	Nine Gap = 9
 	Eleven Gap = 11
 )
+func (g Gap) f() {
+}
 `
 
 const gap_out = `
@@ -114,18 +118,18 @@ var (
 )
 
 // String returns the Gap in a human-readable form.
-func (i Gap) String() string {
+func (g Gap) String() string {
 	switch {
-	case 2 <= i && i <= 3:
-		i -= 2
-		return stringernamesGap0[stringerindexGap0[i]:stringerindexGap0[i+1]]
-	case 5 <= i && i <= 9:
-		i -= 5
-		return stringernamesGap1[stringerindexGap1[i]:stringerindexGap1[i+1]]
-	case i == 11:
+	case 2 <= g && g <= 3:
+		g -= 2
+		return stringernamesGap0[stringerindexGap0[g]:stringerindexGap0[g+1]]
+	case 5 <= g && g <= 9:
+		g -= 5
+		return stringernamesGap1[stringerindexGap1[g]:stringerindexGap1[g+1]]
+	case g == 11:
 		return stringernamesGap2
 	default:
-		return fmt.Sprintf("Gap(%d)", i)
+		return fmt.Sprintf("Gap(%d)", g)
 	}
 }
 `
@@ -139,6 +143,9 @@ const (
 	m1
 	m2
 )
+type Other int // To exercise ignoring methods on unequal types.
+func (o Other) f() {
+}
 `
 
 const num_out = `
@@ -214,6 +221,8 @@ const (
 	p41 Prime = 41
 	p43 Prime = 43
 )
+func (p *Prime) f() {
+}
 `
 
 const prime_out = `
@@ -236,11 +245,11 @@ var stringermapPrime = map[Prime]string{
 }
 
 // String returns the Prime in a human-readable form.
-func (i Prime) String() string {
-	if str, ok := stringermapPrime[i]; ok {
+func (p Prime) String() string {
+	if str, ok := stringermapPrime[p]; ok {
 		return str
 	}
-	return fmt.Sprintf("Prime(%d)", i)
+	return fmt.Sprintf("Prime(%d)", p)
 }
 `
 

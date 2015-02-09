@@ -541,20 +541,52 @@ func (g *Generator) declareNameVars(runs [][]Value, typeName string, suffix stri
 	g.Printf("\"\n")
 }
 
+// receiverName searches the AST for existing methods defined on a type and returns the receiver name if found.
+// Otherwise, "i", is used for the method receiver.
+func (g *Generator) receiverName(typeName string) string {
+	receiver := "i"
+	for _, fi := range g.pkg.files {
+		if fi.file == nil {
+			continue
+		}
+		ast.Inspect(fi.file, func(node ast.Node) bool {
+			decl, ok := node.(*ast.FuncDecl)
+			if !ok || decl.Recv == nil {
+				return true
+			}
+			r := decl.Recv.List[0]
+			var receiverType string
+			switch e := r.Type.(type) {
+			case *ast.Ident:
+				receiverType = e.Name
+			case *ast.StarExpr:
+				receiverType = e.X.(*ast.Ident).Name
+			}
+			if receiverType == typeName {
+				receiver = r.Names[0].Name
+				return true
+			}
+			return false
+		})
+	}
+	return receiver
+}
+
 // buildOneRun generates the variables and String method for a single run of contiguous values.
 func (g *Generator) buildOneRun(runs [][]Value, typeName string) {
 	values := runs[0]
 	g.Printf("\n")
 	g.declareIndexAndNameVar(values, typeName)
 	// The generated code is simple enough to write as a Printf format.
+	receiver := g.receiverName(typeName)
 	lessThanZero := ""
 	if values[0].signed {
-		lessThanZero = "i < 0 || "
+		lessThanZero = receiver + " < 0 || "
 	}
 	if values[0].value == 0 { // Signed or unsigned, 0 is still 0.
-		g.Printf(stringOneRun, typeName, usize(len(values)), lessThanZero)
+		g.Printf(stringOneRun, typeName, usize(len(values)), lessThanZero, receiver)
 	} else {
-		g.Printf(stringOneRunWithOffset, typeName, values[0].String(), usize(len(values)), lessThanZero)
+		g.Printf(stringOneRunWithOffset, typeName, values[0].String(), usize(len(values)), lessThanZero, receiver)
 	}
 }
 
@@ -562,12 +594,13 @@ func (g *Generator) buildOneRun(runs [][]Value, typeName string) {
 //	[1]: type name
 //	[2]: size of index element (8 for uint8 etc.)
 //	[3]: less than zero check (for signed types)
+//      [4]: receiver name
 const stringOneRun = `// String returns the %[1]s in a human-readable form.
-func (i %[1]s) String() string {
-	if %[3]si+1 >= %[1]s(len(stringerindex%[1]s)) {
-		return fmt.Sprintf("%[1]s(%%d)", i)
+func (%[4]s %[1]s) String() string {
+	if %[3]s%[4]s+1 >= %[1]s(len(stringerindex%[1]s)) {
+		return fmt.Sprintf("%[1]s(%%d)", %[4]s)
 	}
-	return stringernames%[1]s[stringerindex%[1]s[i]:stringerindex%[1]s[i+1]]
+	return stringernames%[1]s[stringerindex%[1]s[%[4]s]:stringerindex%[1]s[%[4]s+1]]
 }
 `
 
@@ -576,41 +609,43 @@ func (i %[1]s) String() string {
 //	[2]: lowest defined value for type, as a string
 //	[3]: size of index element (8 for uint8 etc.)
 //	[4]: less than zero check (for signed types)
+//      [5]: receiver name
 /*
  */
 const stringOneRunWithOffset = `// String returns the %[1]s in a human-readable form.
-func (i %[1]s) String() string {
-	i -= %[2]s
-	if %[4]si+1 >= %[1]s(len(stringerindex%[1]s)) {
-		return fmt.Sprintf("%[1]s(%%d)", i + %[2]s)
+func (%[5]s %[1]s) String() string {
+	%[5]s -= %[2]s
+	if %[4]s%[5]s+1 >= %[1]s(len(stringerindex%[1]s)) {
+		return fmt.Sprintf("%[1]s(%%d)", %[5]s + %[2]s)
 	}
-	return stringernames%[1]s[stringerindex%[1]s[i] : stringerindex%[1]s[i+1]]
+	return stringernames%[1]s[stringerindex%[1]s[%[5]s] : stringerindex%[1]s[%[5]s+1]]
 }
 `
 
 // buildMultipleRuns generates the variables and String method for multiple runs of contiguous values.
 // For this pattern, a single Printf format won't do.
 func (g *Generator) buildMultipleRuns(runs [][]Value, typeName string) {
+	receiver := g.receiverName(typeName)
 	g.Printf("\n")
 	g.declareIndexAndNameVars(runs, typeName)
 	g.Printf("// String returns the %s in a human-readable form.\n", typeName)
-	g.Printf("func (i %s) String() string {\n", typeName)
+	g.Printf("func (%s %s) String() string {\n", receiver, typeName)
 	g.Printf("\tswitch {\n")
 	for i, values := range runs {
 		if len(values) == 1 {
-			g.Printf("\tcase i == %s:\n", &values[0])
+			g.Printf("\tcase %s == %s:\n", receiver, &values[0])
 			g.Printf("\t\treturn stringernames%s%d\n", typeName, i)
 			continue
 		}
-		g.Printf("\tcase %s <= i && i <= %s:\n", &values[0], &values[len(values)-1])
+		g.Printf("\tcase %[1]s <= %[2]s && %[2]s <= %[3]s:\n", &values[0], receiver, &values[len(values)-1])
 		if values[0].value != 0 {
-			g.Printf("\t\ti -= %s\n", &values[0])
+			g.Printf("\t\t%s -= %s\n", receiver, &values[0])
 		}
-		g.Printf("\t\treturn stringernames%s%d[stringerindex%s%d[i]:stringerindex%s%d[i+1]]\n",
-			typeName, i, typeName, i, typeName, i)
+		g.Printf("\t\treturn stringernames%s%d[stringerindex%s%d[%s]:stringerindex%s%d[%s+1]]\n",
+			typeName, i, typeName, i, receiver, typeName, i, receiver)
 	}
 	g.Printf("\tdefault:\n")
-	g.Printf("\t\treturn fmt.Sprintf(\"%s(%%d)\", i)\n", typeName)
+	g.Printf("\t\treturn fmt.Sprintf(\"%s(%%d)\", %s)\n", typeName, receiver)
 	g.Printf("\t}\n")
 	g.Printf("}\n")
 }
@@ -629,15 +664,16 @@ func (g *Generator) buildMap(runs [][]Value, typeName string) {
 		}
 	}
 	g.Printf("}\n\n")
-	g.Printf(stringMap, typeName)
+	g.Printf(stringMap, typeName, g.receiverName(typeName))
 }
 
-// Argument to format is the type name.
+// Argument 1 to format is the type name.
+// Argument 2 is the receiver.
 const stringMap = `// String returns the %[1]s in a human-readable form.
-func (i %[1]s) String() string {
-	if str, ok := stringermap%[1]s[i]; ok {
+func (%[2]s %[1]s) String() string {
+	if str, ok := stringermap%[1]s[%[2]s]; ok {
 		return str
 	}
-	return fmt.Sprintf("%[1]s(%%d)", i)
+	return fmt.Sprintf("%[1]s(%%d)", %[2]s)
 }
 `
